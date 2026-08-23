@@ -30,18 +30,6 @@ python app.py
 Site `http://127.0.0.1:5000` adresinde açılır. İlk çalıştırmada `liman.db` dosyası
 otomatik oluşur ve 8 örnek ilanla doldurulur (`seed_if_empty()` fonksiyonu).
 
-## Admin Paneli
-
-`http://127.0.0.1:5000/admin/login`
-
-Varsayılan şifre: **`liman2026`**
-
-Şifreyi değiştirmek için ortam değişkeni ayarla:
-
-```bash
-export ADMIN_PASSWORD="senin-sifren"
-python app.py
-```
 
 Aynı şekilde `SECRET_KEY` ortam değişkenini de gerçek bir projede mutlaka değiştir
 (session imzalama anahtarı — `app.py` içindeki `dev-secret-degistir-bunu` sadece
