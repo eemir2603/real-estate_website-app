@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yönetim Paneli — Liman Gayrimenkul</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#101c22; --ink-soft:#1b2c34; --sea:#2c6478; --sand:#efe6d6; --sand-deep:#ddccac;
+    --clay:#a2492b; --clay-bright:#c2582f; --paper:#f7f3ea; --white:#fffdf9; --line:#e4dcc9;
+    --ff-d:'Space Grotesk',sans-serif; --ff-b:'IBM Plex Sans',sans-serif; --ff-m:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--ff-b); background:var(--paper); color:var(--ink); }
+  header{ background:var(--ink); color:var(--sand); padding:18px 28px; display:flex; justify-content:space-between; align-items:center; }
+  header h1{ font-family:var(--ff-d); font-size:1.15rem; margin:0; }
+  header a{ color:var(--sand); opacity:.8; text-decoration:none; font-size:0.85rem; }
+  header a:hover{ opacity:1; }
+  main{ max-width:1080px; margin:0 auto; padding:28px; }
+  .flash{ background:#fff6e5; border:1px solid var(--clay); color:var(--clay); padding:10px 14px; border-radius:8px; margin-bottom:20px; font-size:0.88rem; }
+  h2{ font-family:var(--ff-d); font-size:1.2rem; margin:34px 0 14px; }
+  .stat-row{ display:flex; gap:14px; margin-bottom:10px; }
+  .stat{ background:var(--white); border:1px solid var(--line); border-radius:10px; padding:12px 18px; font-family:var(--ff-m); font-size:0.85rem; }
+  .stat b{ display:block; font-size:1.3rem; }
+
+  table{ width:100%; border-collapse:collapse; background:var(--white); border-radius:10px; overflow:hidden; border:1px solid var(--line); }
+  th, td{ text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); font-size:0.86rem; vertical-align:top; }
+  th{ background:var(--sand); font-family:var(--ff-m); font-size:0.72rem; text-transform:uppercase; letter-spacing:.04em; }
+  tr:last-child td{ border-bottom:none; }
+  .price{ font-family:var(--ff-m); font-weight:600; white-space:nowrap; }
+  .badge{ font-family:var(--ff-m); font-size:0.7rem; padding:3px 8px; border-radius:100px; background:var(--sand); }
+  .unread{ background:#fdecec; }
+
+  details{ margin-top:4px; }
+  summary{ cursor:pointer; font-size:0.8rem; color:var(--sea); font-weight:600; }
+  .edit-form{ margin-top:10px; padding:12px; background:var(--sand); border-radius:8px; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px; }
+  .row3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:8px; }
+  input, select, textarea{
+    width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:6px; font-family:var(--ff-b); font-size:0.83rem;
+  }
+  label{ font-size:0.7rem; display:block; margin-bottom:3px; opacity:.7; }
+  .actions{ display:flex; gap:8px; margin-top:10px; }
+  button{ font-family:var(--ff-b); font-size:0.8rem; font-weight:600; padding:8px 14px; border-radius:7px; border:none; cursor:pointer; }
+  .btn-save{ background:var(--ink); color:var(--white); }
+  .btn-delete{ background:#fff; border:1px solid #c0392b !important; color:#c0392b; }
+  .btn-add{ background:var(--clay); color:var(--white); margin-top:10px; }
+  .btn-small{ background:none; border:1px solid var(--line); color:var(--ink); padding:5px 10px; font-size:0.74rem; }
+
+  .new-listing{ background:var(--white); border:1px dashed var(--sea); border-radius:10px; padding:16px; margin-top:16px; }
+  .msg-body{ max-width:340px; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🏠 Liman — Yönetim Paneli</h1>
+  <a href="{{ url_for('admin_logout') }}">Çıkış yap →</a>
+</header>
+<main>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}<div class="flash">{{ messages[0] }}</div>{% endif %}
+  {% endwith %}
+
+  <div class="stat-row">
+    <div class="stat"><b>{{ listings|length }}</b>Toplam İlan</div>
+    <div class="stat"><b>{{ messages|length }}</b>Gelen Mesaj</div>
+    <div class="stat"><b>{{ unread_count }}</b>Okunmamış</div>
+  </div>
+
+  <h2>İlanlar</h2>
+  <table>
+    <tr><th>Başlık</th><th>Konum</th><th>Bölge</th><th>Tip</th><th>Fiyat</th><th></th></tr>
+    {% for l in listings %}
+    <tr>
+      <td>{{ l.title }}</td>
+      <td>{{ l.city_label }}</td>
+      <td><span class="badge">{{ 'Türkiye' if l.region=='tr' else 'KKTC' }}</span></td>
+      <td>{{ l.property_type }}</td>
+      <td class="price">{{ '₺' if l.currency=='TRY' else '£' }}{{ '{:,.0f}'.format(l.price) }}</td>
+      <td>
+        <details>
+          <summary>Düzenle</summary>
+          <form class="edit-form" method="POST" action="{{ url_for('admin_edit_listing', listing_id=l.id) }}">
+            <div class="row2">
+              <div><label>Başlık</label><input name="title" value="{{ l.title }}" required></div>
+              <div><label>Konum Etiketi</label><input name="city_label" value="{{ l.city_label }}" required></div>
+            </div>
+            <div class="row3">
+              <div><label>Şehir (slug)</label><input name="city" value="{{ l.city }}" required></div>
+              <div><label>Bölge</label>
+                <select name="region">
+                  <option value="tr" {{ 'selected' if l.region=='tr' }}>Türkiye</option>
+                  <option value="kktc" {{ 'selected' if l.region=='kktc' }}>KKTC</option>
+                </select>
+              </div>
+              <div><label>Durum</label>
+                <select name="status">
+                  {% for s in ['Satılık','Kiralık','Yatırımlık'] %}
+                  <option {{ 'selected' if l.status==s }}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="row3">
+              <div><label>Tip</label>
+                <select name="property_type">
+                  {% for t in ['Daire','Villa','Arsa','İşyeri'] %}
+                  <option {{ 'selected' if l.property_type==t }}>{{ t }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div><label>Segment</label>
+                <select name="tier">
+                  <option value="eco" {{ 'selected' if l.tier=='eco' }}>Ekonomik</option>
+                  <option value="orta" {{ 'selected' if l.tier=='orta' }}>Orta</option>
+                  <option value="ust" {{ 'selected' if l.tier=='ust' }}>Üst</option>
+                </select>
+              </div>
+              <div><label>Para Birimi</label>
+                <select name="currency">
+                  <option value="TRY" {{ 'selected' if l.currency=='TRY' }}>₺ TRY</option>
+                  <option value="GBP" {{ 'selected' if l.currency=='GBP' }}>£ GBP</option>
+                </select>
+              </div>
+            </div>
+            <div class="row3">
+              <div><label>Fiyat</label><input type="number" step="1" name="price" value="{{ l.price|int }}" required></div>
+              <div><label>m²</label><input type="number" name="area_m2" value="{{ l.area_m2 }}" required></div>
+              <div><label>Oda</label><input name="rooms" value="{{ l.rooms }}" required></div>
+            </div>
+            <div class="row2">
+              <div><label>Kat / Tip Bilgisi</label><input name="floor_info" value="{{ l.floor_info }}" required></div>
+            </div>
+            <div class="actions">
+              <button class="btn-save" type="submit">Kaydet</button>
+            </div>
+          </form>
+        </details>
+        <form method="POST" action="{{ url_for('admin_delete_listing', listing_id=l.id) }}" style="margin-top:6px;"
+              onsubmit="return confirm('Bu ilanı silmek istediğine emin misin?');">
+          <button class="btn-delete" type="submit">Sil</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">Henüz ilan yok.</td></tr>
+    {% endfor %}
+  </table>
+
+  <div class="new-listing">
+    <strong style="font-family:var(--ff-d);">+ Yeni İlan Ekle</strong>
+    <form method="POST" action="{{ url_for('admin_new_listing') }}">
+      <div class="row2" style="margin-top:10px;">
+        <div><label>Başlık</label><input name="title" required placeholder="Deniz Manzaralı 3+1 Daire"></div>
+        <div><label>Konum Etiketi</label><input name="city_label" required placeholder="Mersin, Yenişehir"></div>
+      </div>
+      <div class="row3">
+        <div><label>Şehir (slug)</label><input name="city" required placeholder="mersin"></div>
+        <div><label>Bölge</label>
+          <select name="region"><option value="tr">Türkiye</option><option value="kktc">KKTC</option></select>
+        </div>
+        <div><label>Durum</label>
+          <select name="status"><option>Satılık</option><option>Kiralık</option><option>Yatırımlık</option></select>
+        </div>
+      </div>
+      <div class="row3">
+        <div><label>Tip</label>
+          <select name="property_type"><option>Daire</option><option>Villa</option><option>Arsa</option><option>İşyeri</option></select>
+        </div>
+        <div><label>Segment</label>
+          <select name="tier"><option value="eco">Ekonomik</option><option value="orta">Orta</option><option value="ust">Üst</option></select>
+        </div>
+        <div><label>Para Birimi</label>
+          <select name="currency"><option value="TRY">₺ TRY</option><option value="GBP">£ GBP</option></select>
+        </div>
+      </div>
+      <div class="row3">
+        <div><label>Fiyat</label><input type="number" name="price" required placeholder="4250000"></div>
+        <div><label>m²</label><input type="number" name="area_m2" required placeholder="120"></div>
+        <div><label>Oda</label><input name="rooms" required placeholder="3 Oda"></div>
+      </div>
+      <div class="row2">
+        <div><label>Kat / Tip Bilgisi</label><input name="floor_info" required placeholder="Kat 4"></div>
+      </div>
+      <button class="btn-add" type="submit">İlanı Ekle</button>
+    </form>
+  </div>
+
+  <h2>Gelen Mesajlar</h2>
+  <table>
+    <tr><th>Tarih</th><th>Ad</th><th>İletişim</th><th>Mesaj</th><th></th></tr>
+    {% for m in messages %}
+    <tr class="{{ 'unread' if not m.is_read }}">
+      <td style="white-space:nowrap;">{{ m.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+      <td>{{ m.name }}</td>
+      <td>{{ m.email }}{% if m.phone %}<br>{{ m.phone }}{% endif %}</td>
+      <td class="msg-body">{{ m.message or '—' }}</td>
+      <td>
+        {% if not m.is_read %}
+        <form method="POST" action="{{ url_for('admin_mark_read', message_id=m.id) }}">
+          <button class="btn-small" type="submit">Okundu işaretle</button>
+        </form>
+        {% endif %}
+        <form method="POST" action="{{ url_for('admin_delete_message', message_id=m.id) }}" style="margin-top:4px;">
+          <button class="btn-small" type="submit">Sil</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">Henüz mesaj yok.</td></tr>
+    {% endfor %}
+  </table>
+</main>
+</body>
+</html>

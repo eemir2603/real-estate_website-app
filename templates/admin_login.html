@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yönetim Girişi — Liman Gayrimenkul</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#101c22; --sea-deep:#173c48; --sand:#efe6d6; --clay:#a2492b; --clay-bright:#c2582f; --white:#fffdf9; }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Sans', sans-serif;
+    background:linear-gradient(180deg, var(--ink), var(--sea-deep));
+    color:var(--sand);
+  }
+  .box{
+    width:100%; max-width:360px; background:rgba(239,230,214,0.06);
+    border:1px solid rgba(239,230,214,0.16); border-radius:16px; padding:32px;
+  }
+  h1{ font-family:'Space Grotesk', sans-serif; font-size:1.3rem; margin:0 0 6px; color:var(--white); }
+  p.sub{ margin:0 0 24px; font-size:0.85rem; opacity:0.6; }
+  label{ display:block; font-size:0.8rem; margin-bottom:6px; opacity:0.75; }
+  input{
+    width:100%; padding:11px 13px; border-radius:9px; border:1px solid rgba(239,230,214,0.2);
+    background:rgba(16,28,34,0.5); color:var(--white); font-size:0.95rem; margin-bottom:16px;
+  }
+  button{
+    width:100%; padding:12px; border:none; border-radius:9px; background:var(--clay);
+    color:var(--white); font-weight:600; font-size:0.92rem; cursor:pointer; transition:background .2s;
+  }
+  button:hover{ background:var(--clay-bright); }
+  .flash{ background:rgba(194,88,47,0.2); border:1px solid var(--clay-bright); color:var(--sand);
+          padding:10px 12px; border-radius:8px; font-size:0.82rem; margin-bottom:16px; }
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>Liman Yönetim Paneli</h1>
+    <p class="sub">İlanları ve mesajları yönetmek için giriş yapın.</p>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}<div class="flash">{{ messages[0] }}</div>{% endif %}
+    {% endwith %}
+    <form method="POST">
+      <label for="password">Şifre</label>
+      <input type="password" id="password" name="password" required autofocus>
+      <button type="submit">Giriş Yap</button>
+    </form>
+  </div>
+</body>
+</html>
