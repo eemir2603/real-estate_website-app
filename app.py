@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'l
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-degistir-bunu')
 
-ADMIN_PASSWORD_HASH = generate_password_hash(os.environ.get('ADMIN_PASSWORD', 'liman2026'))
+ADMIN_PASSWORD_HASH = generate_password_hash(os.environ['ADMIN_PASSWORD'])
 
 db = SQLAlchemy(app)
 
