@@ -12,7 +12,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'liman.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-degistir-bunu')
+app.secret_key = os.environ['SECRET_KEY']
 
 ADMIN_PASSWORD_HASH = generate_password_hash(os.environ['ADMIN_PASSWORD'])
 
